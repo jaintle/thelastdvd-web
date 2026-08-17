@@ -104,7 +104,7 @@ hr {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-5);
-  padding: var(--space-4) 0;
+  padding-block: var(--space-4);
 }
 .masthead {
   text-decoration: none;
@@ -222,7 +222,7 @@ hr {
   font-size: 14px;
 }
 .site-footer__inner {
-  padding: var(--space-7) 0 var(--space-6);
+  padding-block: var(--space-7) var(--space-6);
   display: grid;
   gap: var(--space-6);
   grid-template-columns: repeat(3, 1fr);
@@ -246,7 +246,7 @@ hr {
 }
 .site-footer__meta {
   border-top: 1px solid var(--rule);
-  padding: var(--space-4) 0;
+  padding-block: var(--space-4);
   color: var(--muted);
   display: flex;
   justify-content: space-between;
@@ -261,7 +261,7 @@ hr {
 
 /* ---- Homepage ---- */
 .lead {
-  padding: var(--space-7) 0 var(--space-6);
+  padding-block: var(--space-7) var(--space-6);
   border-bottom: 1px solid var(--rule);
 }
 .lead__eyebrow,
@@ -309,7 +309,7 @@ hr {
 
 /* Issue blocks on homepage */
 .issue-block {
-  padding: var(--space-6) 0 0;
+  padding-block: var(--space-6) 0;
   border-top: 1px solid var(--rule);
   margin-top: var(--space-6);
 }
@@ -490,7 +490,7 @@ hr {
 .article {
   max-width: var(--prose-w);
   margin: 0 auto;
-  padding: var(--space-7) 0 var(--space-8);
+  padding-block: var(--space-7) var(--space-8);
 }
 .article__eyebrow {
   font-family: var(--sans);
@@ -933,5 +933,5 @@ hr {
 .page-body {
   max-width: var(--prose-w);
   margin: 0 auto;
-  padding: 0 0 var(--space-8);
+  padding-block: 0 var(--space-8);
 }

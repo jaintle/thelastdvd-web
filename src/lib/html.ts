@@ -41,6 +41,29 @@ export function rewriteInternalLinks(html: string | undefined | null, origins: s
 }
 
 /**
+ * WordPress can rewrite email domains during a hostname change (e.g.
+ * `editor@thelastdvd.com` becomes `editor@cms.thelastdvd.com` after the DB
+ * search-replace). Strip the CMS subdomain back out so bylines and body text
+ * always show the editorial address.
+ *
+ * `cmsHost` = the WP hostname (e.g. `cms.thelastdvd.com`)
+ * `publicHost` = the public hostname (e.g. `thelastdvd.com`)
+ * Only rewrites when cmsHost is a subdomain of publicHost.
+ */
+export function normaliseEmailDomain(
+  html: string | undefined | null,
+  cmsHost: string,
+  publicHost: string,
+): string {
+  if (!html) return '';
+  if (!cmsHost || !publicHost || cmsHost === publicHost) return html;
+  if (!cmsHost.endsWith(`.${publicHost}`)) return html;
+  const escaped = cmsHost.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // Match `@cms.thelastdvd.com` anywhere (mailto: link, visible text, meta).
+  return html.replace(new RegExp(`@${escaped}\\b`, 'gi'), `@${publicHost}`);
+}
+
+/**
  * Group WordPress "flat" editor cards on the About page.
  *   <figure><img></figure><h5>Name</h5><p>Bio</p>
  * becomes

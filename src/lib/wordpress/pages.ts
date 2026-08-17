@@ -1,11 +1,25 @@
 import { apiUrl, fetchWp } from './client';
 import type { PageContent, WPPage } from './types';
-import { decodeEntities, rewriteInternalLinks } from '../html';
+import { decodeEntities, normaliseEmailDomain, rewriteInternalLinks } from '../html';
 import { siteConfig } from '../../config/site';
 
 const WP_ORIGIN = (import.meta.env.WORDPRESS_BASE_URL as string | undefined)?.replace(/\/+$/, '') ?? '';
 const PUBLIC_ORIGIN = siteConfig.url;
 const REWRITE_ORIGINS = Array.from(new Set([WP_ORIGIN, PUBLIC_ORIGIN, 'https://thelastdvd.com'].filter(Boolean)));
+
+function hostOf(u: string): string {
+  try { return new URL(u).host; } catch { return ''; }
+}
+const CMS_HOST = hostOf(WP_ORIGIN);
+const PUBLIC_HOST = hostOf(PUBLIC_ORIGIN) || 'thelastdvd.com';
+
+export function transformWpContent(html: string): string {
+  return normaliseEmailDomain(
+    rewriteInternalLinks(html, REWRITE_ORIGINS),
+    CMS_HOST,
+    PUBLIC_HOST,
+  );
+}
 
 export async function getPageBySlug(slug: string): Promise<PageContent | null> {
   try {
@@ -16,7 +30,7 @@ export async function getPageBySlug(slug: string): Promise<PageContent | null> {
       id: page.id,
       slug: page.slug,
       title: decodeEntities(page.title.rendered),
-      contentHtml: rewriteInternalLinks(page.content.rendered, REWRITE_ORIGINS),
+      contentHtml: transformWpContent(page.content.rendered),
     };
   } catch {
     return null;

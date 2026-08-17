@@ -1,11 +1,16 @@
 import { canonicalFor, siteConfig } from '../../config/site';
-import { decodeEntities, rewriteInternalLinks, safeExcerpt, sanitizeBio, stripHtml } from '../html';
+import { decodeEntities, normaliseEmailDomain, rewriteInternalLinks, safeExcerpt, sanitizeBio, stripHtml } from '../html';
 import type { Article, WPMedia, WPPost, WPTerm, WPUser } from './types';
 
 const WP_ORIGIN = (import.meta.env.WORDPRESS_BASE_URL as string | undefined)?.replace(/\/+$/, '') ?? '';
 const REWRITE_ORIGINS = Array.from(
   new Set([WP_ORIGIN, siteConfig.url, 'https://thelastdvd.com'].filter(Boolean)),
 );
+function hostOf(u: string): string {
+  try { return new URL(u).host; } catch { return ''; }
+}
+const CMS_HOST = hostOf(WP_ORIGIN);
+const PUBLIC_HOST = hostOf(siteConfig.url) || 'thelastdvd.com';
 
 interface HydrateInput {
   media: WPMedia | null;
@@ -89,7 +94,11 @@ export function toArticle(post: WPPost, ctx: HydrateInput): Article {
     titleHtml,
     excerptHtml,
     excerptText,
-    contentHtml: rewriteInternalLinks(post.content.rendered, REWRITE_ORIGINS),
+    contentHtml: normaliseEmailDomain(
+      rewriteInternalLinks(post.content.rendered, REWRITE_ORIGINS),
+      CMS_HOST,
+      PUBLIC_HOST,
+    ),
     date: post.date,
     modified: post.modified,
     authorId: post.author,
