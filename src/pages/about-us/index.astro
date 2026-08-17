@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import WpContent from '../../components/content/WpContent.astro';
+import { getPageBySlug } from '../../lib/wordpress/pages';
+import { siteConfig } from '../../config/site';
+
+const page = await getPageBySlug('about-us');
+const title = page?.title || 'About us';
+---
+
+<BaseLayout title={title} description={`About ${siteConfig.name}.`}>
+  <div class="container page-body">
+    <h1 class="page-title">{title}</h1>
+    {page ? (
+      <WpContent html={page.contentHtml} />
+    ) : (
+      <p>
+        {siteConfig.name} is an independent magazine on cinema and adjacent arts.
+        The full masthead and editorial background live in WordPress and will appear here shortly.
+      </p>
+    )}
+  </div>
+</BaseLayout>

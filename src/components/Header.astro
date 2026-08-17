@@ -1,0 +1,54 @@
+---
+import { siteConfig } from '../config/site';
+---
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a href="/" class="masthead" aria-label={`${siteConfig.name} — home`}>
+      <img
+        class="masthead__logo"
+        src="/brand/tld-logo-white-without-bg.png"
+        alt={siteConfig.name}
+        onerror="this.style.display='none';this.nextElementSibling.style.display='inline'"
+      />
+      <span class="masthead__wordmark" aria-hidden="true">{siteConfig.name}</span>
+    </a>
+    <button
+      class="nav-toggle"
+      type="button"
+      aria-controls="primary-nav"
+      aria-expanded="false"
+      data-nav-toggle
+    >
+      Menu
+    </button>
+    <nav class="primary-nav" id="primary-nav" aria-label="Primary">
+      <ul>
+        {siteConfig.nav.map((item) => (
+          <li><a href={item.href}>{item.label}</a></li>
+        ))}
+      </ul>
+      <form class="header-search" role="search" action="/search/" method="get">
+        <label class="visually-hidden" for="header-search-input">Search</label>
+        <input
+          id="header-search-input"
+          name="q"
+          type="search"
+          placeholder="Search"
+          autocomplete="off"
+        />
+      </form>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const btn = document.querySelector('[data-nav-toggle]') as HTMLButtonElement | null;
+  const nav = document.getElementById('primary-nav');
+  if (btn && nav) {
+    btn.addEventListener('click', () => {
+      const open = nav.classList.toggle('is-open');
+      btn.setAttribute('aria-expanded', String(open));
+    });
+  }
+</script>

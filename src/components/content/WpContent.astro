@@ -1,0 +1,10 @@
+---
+interface Props {
+  html: string;
+  class?: string;
+}
+const { html, class: cls } = Astro.props;
+const className = ['wp-content', cls].filter(Boolean).join(' ');
+---
+
+<div class={className} set:html={html} />

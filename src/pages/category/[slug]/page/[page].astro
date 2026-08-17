@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../../../../layouts/BaseLayout.astro';
+import PostList from '../../../../components/PostList.astro';
+import Pagination from '../../../../components/Pagination.astro';
+import { getAllCategories } from '../../../../lib/wordpress/taxonomies';
+import { getPostsByCategoryId } from '../../../../lib/wordpress/posts';
+import { decodeEntities } from '../../../../lib/html';
+import type { WPTerm, Article } from '../../../../lib/wordpress/types';
+
+export async function getStaticPaths() {
+  const PER_PAGE = 12;
+  const cats = await getAllCategories().catch(() => [] as WPTerm[]);
+  const paths: Array<{ params: { slug: string; page: string }; props: { category: WPTerm; posts: Article[]; page: number; totalPages: number } }> = [];
+  for (const c of cats) {
+    if (c.slug === 'uncategorized' || c.count === 0) continue;
+    const posts = await getPostsByCategoryId(c.id);
+    const total = Math.ceil(posts.length / PER_PAGE);
+    for (let p = 2; p <= total; p++) {
+      paths.push({
+        params: { slug: c.slug, page: String(p) },
+        props: { category: c, posts: posts.slice((p - 1) * PER_PAGE, p * PER_PAGE), page: p, totalPages: total },
+      });
+    }
+  }
+  return paths;
+}
+
+interface Props { category: WPTerm; posts: Article[]; page: number; totalPages: number }
+const { category, posts, page, totalPages } = Astro.props;
+const name = decodeEntities(category.name);
+---
+
+<BaseLayout title={`${name} — Page ${page}`} description={category.description || `Articles in ${name}.`}>
+  <div class="container">
+    <h1 class="page-title">{name}</h1>
+    <p style="font-family:var(--sans);color:var(--muted);">Page {page} of {totalPages}</p>
+    <PostList articles={posts} />
+    <Pagination currentPage={page} totalPages={totalPages} basePath={`/category/${category.slug}`} />
+  </div>
+</BaseLayout>

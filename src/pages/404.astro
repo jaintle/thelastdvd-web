@@ -1,0 +1,14 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Page not found" description="This page could not be found." noindex={true}>
+  <section class="container page-body" style="padding-top:64px;text-align:center;">
+    <h1 class="page-title" style="margin-top:0;">Page not found</h1>
+    <p>The page you were looking for isn't here. It may have moved, or the link might be off.</p>
+    <p style="margin-top:32px;">
+      <a class="button" href="/">Back to the homepage</a>
+      &nbsp;<a class="button" href="/subscribe/" style="background:transparent;color:var(--ink);border:1px solid var(--rule);">Subscribe</a>
+    </p>
+  </section>
+</BaseLayout>

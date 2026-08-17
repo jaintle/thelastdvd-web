@@ -1,0 +1,44 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import { siteConfig } from '../config/site';
+import type { Article } from '../lib/wordpress/types';
+import { isoDate } from '../lib/dates';
+
+interface Props {
+  article: Article;
+}
+const { article } = Astro.props;
+
+const description = article.excerptText || siteConfig.description;
+
+const schema = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: article.title,
+  datePublished: isoDate(article.date),
+  dateModified: isoDate(article.modified),
+  ...(article.authorName ? { author: { '@type': 'Person', name: article.authorName } } : {}),
+  ...(article.featured?.url ? { image: article.featured.url } : {}),
+  mainEntityOfPage: article.canonicalUrl,
+  publisher: {
+    '@type': 'Organization',
+    name: siteConfig.name,
+    url: siteConfig.url,
+  },
+};
+---
+
+<BaseLayout
+  title={article.title}
+  description={description}
+  canonical={article.canonicalUrl}
+  ogImage={article.featured?.url ?? null}
+  ogType="article"
+>
+  <script
+    type="application/ld+json"
+    is:inline
+    set:html={JSON.stringify(schema)}
+  />
+  <slot />
+</BaseLayout>

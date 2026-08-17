@@ -1,17 +1,101 @@
 ---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+import { getAllPosts } from '../lib/wordpress/posts';
+import { getAllCategories } from '../lib/wordpress/taxonomies';
+import { formatDate, isoDate } from '../lib/dates';
+import { siteConfig } from '../config/site';
+import type { Article, WPTerm } from '../lib/wordpress/types';
 
+const [posts, categories] = await Promise.all([
+  getAllPosts().catch(() => [] as Article[]),
+  getAllCategories().catch(() => [] as WPTerm[]),
+]);
+
+const lead = posts[0];
+const latest = posts.slice(1, 13); // rolling window of the next 12 stories
+
+// Build issue archive nav. "Current Issue" duplicates the highest issue-N
+// (per PublishPress / editorial workflow), so we drop it and expose the numbered
+// issues descending.
+function issueNumber(slug: string): number | null {
+  const m = /^issue-(\d+)/i.exec(slug);
+  return m ? Number(m[1]) : null;
+}
+const issueLinks = categories
+  .filter((c) => issueNumber(c.slug) !== null)
+  .sort((a, b) => (issueNumber(b.slug) ?? 0) - (issueNumber(a.slug) ?? 0));
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout title={siteConfig.name} description={siteConfig.description}>
+  {lead ? (
+    <section class="container lead">
+      {lead.categories[0] && (
+        <p class="lead__eyebrow">
+          <a href={`/category/${lead.categories[0].slug}/`} style="color:inherit;text-decoration:none;">
+            {lead.categories[0].name}
+          </a>
+        </p>
+      )}
+      {lead.featured && (
+        <figure class="lead__figure">
+          <a href={`/${lead.slug}/`}>
+            <img
+              src={lead.featured.url}
+              alt={lead.featured.alt}
+              loading="eager"
+              decoding="async"
+            />
+          </a>
+        </figure>
+      )}
+      <h1 class="lead__title">
+        <a href={`/${lead.slug}/`} set:html={lead.titleHtml} />
+      </h1>
+      {lead.excerptText && <p class="lead__dek">{lead.excerptText}</p>}
+      <p class="lead__byline">
+        {lead.authorName && (
+          <>By {lead.authorSlug ? (
+            <a href={`/author/${lead.authorSlug}/`}>{lead.authorName}</a>
+          ) : lead.authorName} · </>
+        )}
+        <time datetime={isoDate(lead.date)}>{formatDate(lead.date)}</time>
+      </p>
+    </section>
+  ) : (
+    <section class="container" style="padding:64px 0;">
+      <h1>{siteConfig.name}</h1>
+      <p>Content is being prepared. Please check back shortly.</p>
+    </section>
+  )}
+
+  {latest.length > 0 && (
+    <section class="container issue-block">
+      <header class="issue-block__head">
+        <h2 class="issue-block__title">Latest</h2>
+        <a class="issue-block__more" href="/all-issues/">All issues →</a>
+      </header>
+      <div class="post-grid">
+        {latest.map((a) => <PostCard article={a} />)}
+      </div>
+    </section>
+  )}
+
+  {issueLinks.length > 0 && (
+    <section class="container issue-block">
+      <header class="issue-block__head">
+        <h2 class="issue-block__title">Browse issues</h2>
+      </header>
+      <ul class="issue-strip">
+        {issueLinks.map((c) => (
+          <li>
+            <a href={`/category/${c.slug}/`}>
+              <span class="issue-strip__name">{c.name}</span>
+              {c.count > 0 && <span class="issue-strip__count">{c.count} pieces</span>}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )}
+</BaseLayout>

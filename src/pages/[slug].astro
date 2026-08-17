@@ -1,0 +1,135 @@
+---
+import ArticleLayout from '../layouts/ArticleLayout.astro';
+import WpContent from '../components/content/WpContent.astro';
+import Subscribe from '../components/Subscribe.astro';
+import { getAllPosts } from '../lib/wordpress/posts';
+import { formatDate, isoDate } from '../lib/dates';
+import { stripHtml } from '../lib/html';
+import type { Article } from '../lib/wordpress/types';
+
+export async function getStaticPaths() {
+  const posts = await getAllPosts().catch(() => [] as Article[]);
+  return posts.map((article) => ({
+    params: { slug: article.slug },
+    props: { article },
+  }));
+}
+
+interface Props {
+  article: Article;
+}
+const { article } = Astro.props;
+
+// Only show the excerpt as a dek if it's meaningfully distinct from the body opening.
+const showDek = article.excerptText && article.excerptText.length > 40;
+const contentPreview = stripHtml(article.contentHtml).slice(0, article.excerptText.length + 40);
+const dekIsDuplicate = article.excerptText && contentPreview.startsWith(article.excerptText.slice(0, 60));
+
+// Editors often set the featured image to an image also placed inside the body.
+// Suppress the hero when the body already contains the same asset so the image
+// isn't repeated. Compare on the URL up to the size suffix (WP appends -WxH.jpg).
+function normaliseSrc(u: string): string {
+  return u.replace(/-\d+x\d+(?=\.[a-z]{3,4}$)/i, '').split('?')[0]!.toLowerCase();
+}
+const featuredNormalised = article.featured ? normaliseSrc(article.featured.url) : '';
+const bodyImageSources = Array.from(article.contentHtml.matchAll(/<img[^>]+src="([^"]+)"/gi)).map(
+  (m) => normaliseSrc(m[1]!),
+);
+const featuredInBody = featuredNormalised && bodyImageSources.includes(featuredNormalised);
+const showHero = Boolean(article.featured) && !featuredInBody;
+---
+
+<ArticleLayout article={article}>
+  <article class="container article">
+    {article.categories[0] && (
+      <p class="article__eyebrow">
+        <a href={`/category/${article.categories[0].slug}/`} style="color:inherit;text-decoration:none;">
+          {article.categories[0].name}
+        </a>
+      </p>
+    )}
+    <h1 class="article__title" set:html={article.titleHtml} />
+    {showDek && !dekIsDuplicate && <p class="article__dek">{article.excerptText}</p>}
+
+    <div class="article__byline">
+      {article.authorAvatar ? (
+        <img class="byline-avatar" src={article.authorAvatar} alt="" width="40" height="40" loading="lazy" />
+      ) : article.authorInitials ? (
+        <span class="byline-avatar byline-avatar--initials" aria-hidden="true">{article.authorInitials}</span>
+      ) : null}
+      <p>
+        {article.authorName && (
+          <>
+            By {article.authorSlug ? (
+              <a href={`/author/${article.authorSlug}/`}>{article.authorName}</a>
+            ) : article.authorName}
+            {' · '}
+          </>
+        )}
+        <time datetime={isoDate(article.date)}>{formatDate(article.date)}</time>
+      </p>
+    </div>
+
+    {showHero && article.featured && (
+      <figure class="article__hero">
+        <img
+          src={article.featured.url}
+          alt={article.featured.alt}
+          width={article.featured.width ?? undefined}
+          height={article.featured.height ?? undefined}
+          loading="eager"
+          decoding="async"
+        />
+        {article.featured.caption && <figcaption>{article.featured.caption}</figcaption>}
+      </figure>
+    )}
+
+    <WpContent html={article.contentHtml} />
+
+    <div class="article__meta">
+      {article.categories.length > 0 && (
+        <p>
+          <strong>Filed under:</strong>{' '}
+          {article.categories.map((c) => (
+            <a class="chip" href={`/category/${c.slug}/`}>{c.name}</a>
+          ))}
+        </p>
+      )}
+      {article.tags.length > 0 && (
+        <p>
+          <strong>Tagged:</strong>{' '}
+          {article.tags.map((t) => (
+            <a class="chip" href={`/tag/${t.slug}/`}>{t.name}</a>
+          ))}
+        </p>
+      )}
+    </div>
+
+    {(article.authorName || article.authorBio) && (
+      <aside class="author-bio">
+        <h3>About the author</h3>
+        <div class="author-bio__head">
+          {article.authorAvatar ? (
+            <img src={article.authorAvatar} alt="" width="64" height="64" loading="lazy" />
+          ) : article.authorInitials ? (
+            <span class="byline-avatar byline-avatar--lg byline-avatar--initials" aria-hidden="true">{article.authorInitials}</span>
+          ) : null}
+          <p>
+            <strong>
+              {article.authorSlug ? (
+                <a href={`/author/${article.authorSlug}/`}>{article.authorName}</a>
+              ) : article.authorName}
+            </strong>
+          </p>
+        </div>
+        {article.authorBioHtml ? (
+          <p class="author-bio__text" set:html={article.authorBioHtml} />
+        ) : article.authorBio ? (
+          <p class="author-bio__text">{article.authorBio}</p>
+        ) : null}
+      </aside>
+    )}
+
+    <Subscribe />
+  </article>
+</ArticleLayout>

@@ -1,0 +1,27 @@
+---
+interface Props {
+  currentPage: number;
+  totalPages: number;
+  basePath: string; // no trailing slash, e.g. "/category/cinema"
+}
+const { currentPage, totalPages, basePath } = Astro.props;
+
+function hrefFor(page: number): string {
+  if (page <= 1) return `${basePath}/`;
+  return `${basePath}/page/${page}/`;
+}
+
+const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+---
+
+{totalPages > 1 && (
+  <nav class="pagination" aria-label="Pagination">
+    {currentPage > 1 && <a href={hrefFor(currentPage - 1)} rel="prev">← Previous</a>}
+    {pages.map((p) => (
+      p === currentPage
+        ? <span aria-current="page">{p}</span>
+        : <a href={hrefFor(p)}>{p}</a>
+    ))}
+    {currentPage < totalPages && <a href={hrefFor(currentPage + 1)} rel="next">Next →</a>}
+  </nav>
+)}

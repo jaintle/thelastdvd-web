@@ -1,0 +1,42 @@
+---
+import { siteConfig } from '../config/site';
+const year = new Date().getUTCFullYear();
+const socials = Object.entries(siteConfig.socials).filter(([, url]) => Boolean(url));
+---
+
+<footer class="site-footer">
+  <div class="container site-footer__inner">
+    <div>
+      <h4>{siteConfig.name}</h4>
+      <p>Independent writing on cinema and adjacent arts.</p>
+      <p>
+        <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>
+      </p>
+    </div>
+    <div>
+      <h4>Read</h4>
+      <ul style="list-style:none;padding:0;margin:0;display:grid;gap:6px;">
+        {siteConfig.nav.map((item) => (
+          <li><a href={item.href}>{item.label}</a></li>
+        ))}
+        <li><a href="/rss.xml">RSS</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Newsletter</h4>
+      <p>The free Beehiiv newsletter — no paywall, no membership.</p>
+      <p><a class="button" href="/subscribe/">Subscribe</a></p>
+      {socials.length > 0 && (
+        <p style="margin-top:16px;display:flex;gap:12px;flex-wrap:wrap;">
+          {socials.map(([name, url]) => (
+            <a href={url} rel="me noopener" target="_blank">{name}</a>
+          ))}
+        </p>
+      )}
+    </div>
+  </div>
+  <div class="container site-footer__meta">
+    <span>© {year} {siteConfig.name}</span>
+    <span>Editor: <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a></span>
+  </div>
+</footer>

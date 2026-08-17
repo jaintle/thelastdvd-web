@@ -1,0 +1,17 @@
+---
+import type { Article } from '../lib/wordpress/types';
+import PostCard from './PostCard.astro';
+
+interface Props {
+  articles: Article[];
+}
+const { articles } = Astro.props;
+---
+
+{articles.length === 0 ? (
+  <p style="text-align:center;color:var(--muted);padding:32px 0;">No articles yet.</p>
+) : (
+  <div class="post-grid">
+    {articles.map((a) => <PostCard article={a} />)}
+  </div>
+)}

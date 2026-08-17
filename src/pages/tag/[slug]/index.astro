@@ -1,0 +1,35 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PostList from '../../../components/PostList.astro';
+import Pagination from '../../../components/Pagination.astro';
+import { getAllTags } from '../../../lib/wordpress/taxonomies';
+import { getPostsByTagId } from '../../../lib/wordpress/posts';
+import { decodeEntities } from '../../../lib/html';
+import type { WPTerm } from '../../../lib/wordpress/types';
+
+const PER_PAGE = 12;
+
+export async function getStaticPaths() {
+  const tags = await getAllTags().catch(() => [] as WPTerm[]);
+  return tags
+    .filter((t) => t.count > 0)
+    .map((t) => ({ params: { slug: t.slug }, props: { tag: t } }));
+}
+
+interface Props { tag: WPTerm }
+const { tag } = Astro.props;
+
+const posts = await getPostsByTagId(tag.id);
+const page1 = posts.slice(0, PER_PAGE);
+const totalPages = Math.max(1, Math.ceil(posts.length / PER_PAGE));
+const name = decodeEntities(tag.name);
+---
+
+<BaseLayout title={`${name} — Tag`} description={tag.description || `Articles tagged “${name}”.`}>
+  <div class="container">
+    <h1 class="page-title">#{name}</h1>
+    {tag.description && <p style="max-width:var(--prose-w);color:var(--ink-soft);">{tag.description}</p>}
+    <PostList articles={page1} />
+    <Pagination currentPage={1} totalPages={totalPages} basePath={`/tag/${tag.slug}`} />
+  </div>
+</BaseLayout>

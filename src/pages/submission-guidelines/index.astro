@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import WpContent from '../../components/content/WpContent.astro';
+import { getPageBySlug } from '../../lib/wordpress/pages';
+import { siteConfig } from '../../config/site';
+
+const page = await getPageBySlug('submission-guidelines');
+const title = page?.title || 'Write for Us';
+---
+
+<BaseLayout title={title} description="Submission guidelines for The Last DVD.">
+  <div class="container page-body">
+    <h1 class="page-title">{title}</h1>
+    {page ? (
+      <WpContent html={page.contentHtml} />
+    ) : (
+      <p>
+        Submission guidelines are being finalised. Write to
+        <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>
+        with your pitch in the meantime.
+      </p>
+    )}
+  </div>
+</BaseLayout>

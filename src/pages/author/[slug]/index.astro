@@ -1,0 +1,86 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PostList from '../../../components/PostList.astro';
+import { getAllPosts } from '../../../lib/wordpress/posts';
+import { getAllPPMAAuthors } from '../../../lib/wordpress/taxonomies';
+import { getPPMAProfile } from '../../../lib/wordpress/ppma-profiles';
+import { decodeEntities, sanitizeBio, stripHtml } from '../../../lib/html';
+
+export async function getStaticPaths() {
+  const [ppmaAuthors, posts] = await Promise.all([
+    getAllPPMAAuthors().catch(() => []),
+    getAllPosts().catch(() => []),
+  ]);
+
+  const postsByAuthorSlug = new Map<string, number>();
+  for (const p of posts) {
+    if (!p.authorSlug || !p.authorName) continue;
+    postsByAuthorSlug.set(p.authorSlug, (postsByAuthorSlug.get(p.authorSlug) ?? 0) + 1);
+  }
+
+  const paths = new Map<string, { slug: string; name: string; termBio: string }>();
+  for (const a of ppmaAuthors) {
+    if (!a.slug || !a.name) continue;
+    if (!postsByAuthorSlug.has(a.slug)) continue;
+    paths.set(a.slug, {
+      slug: a.slug,
+      name: decodeEntities(a.name),
+      termBio: stripHtml(a.description ?? ''),
+    });
+  }
+
+  return Array.from(paths.values()).map((p) => ({ params: { slug: p.slug }, props: p }));
+}
+
+interface Props { slug: string; name: string; termBio: string }
+const { slug, name, termBio } = Astro.props;
+
+const [allPosts, profile] = await Promise.all([
+  getAllPosts().catch(() => []),
+  getPPMAProfile(slug),
+]);
+const posts = allPosts.filter((p) => p.authorSlug === slug);
+
+// Best available bio: taxonomy description → scraped PP box HTML → per-article.
+const bioHtml =
+  sanitizeBio(profile.bioHtml) ||
+  posts.find((p) => p.authorBioHtml)?.authorBioHtml ||
+  '';
+const bio =
+  termBio ||
+  profile.bio ||
+  posts.find((p) => p.authorBio)?.authorBio ||
+  '';
+
+const avatar =
+  profile.avatar ||
+  posts.find((p) => p.authorAvatar)?.authorAvatar ||
+  null;
+
+const initials = posts.find((p) => p.authorInitials)?.authorInitials ?? '';
+---
+
+<BaseLayout title={`${name} — Author`} description={bio || `Articles by ${name}.`}>
+  <div class="container page-body">
+    <header class="author-header">
+      {avatar ? (
+        <img class="author-header__avatar" src={avatar} alt="" width="96" height="96" />
+      ) : initials ? (
+        <span class="author-header__avatar byline-avatar--initials" aria-hidden="true">{initials}</span>
+      ) : null}
+      <div class="author-header__meta">
+        <h1 class="page-title" style="margin:0 0 8px;">{name}</h1>
+        {bioHtml ? (
+          <p class="author-header__bio" set:html={bioHtml} />
+        ) : bio ? (
+          <p class="author-header__bio">{bio}</p>
+        ) : null}
+      </div>
+    </header>
+    {posts.length > 0 ? (
+      <PostList articles={posts} />
+    ) : (
+      <p style="color:var(--muted);padding:24px 0;">No articles yet.</p>
+    )}
+  </div>
+</BaseLayout>

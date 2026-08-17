@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import WpContent from '../../components/content/WpContent.astro';
+import { getPageBySlug } from '../../lib/wordpress/pages';
+import { siteConfig } from '../../config/site';
+
+const page = await getPageBySlug('contact-us');
+const title = page?.title || 'Contact';
+---
+
+<BaseLayout title={title} description={`Contact ${siteConfig.name}.`}>
+  <div class="container page-body">
+    <h1 class="page-title">{title}</h1>
+    {page && <WpContent html={page.contentHtml} />}
+    <p style="margin-top:24px;">
+      Editorial enquiries and submissions:
+      <a href={`mailto:${siteConfig.email}`}><strong>{siteConfig.email}</strong></a>
+    </p>
+  </div>
+</BaseLayout>

@@ -1,0 +1,16 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Subscribe from '../../components/Subscribe.astro';
+import { siteConfig } from '../../config/site';
+---
+
+<BaseLayout title="Subscribe" description={`Subscribe to the free ${siteConfig.name} newsletter.`}>
+  <div class="container page-body">
+    <h1 class="page-title">Subscribe</h1>
+    <p>
+      The {siteConfig.name} newsletter is <strong>free</strong>. There is no membership,
+      no paywall, and no site account. You'll get new pieces by email.
+    </p>
+    <Subscribe variant="full" />
+  </div>
+</BaseLayout>

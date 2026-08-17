@@ -1,0 +1,48 @@
+---
+import type { Article } from '../lib/wordpress/types';
+import { formatDate, isoDate } from '../lib/dates';
+
+interface Props {
+  article: Article;
+}
+const { article } = Astro.props;
+const href = `/${article.slug}/`;
+const cat = article.categories[0];
+---
+
+<article class="card">
+  {article.featured && (
+    <figure class="card__figure">
+      <a href={href} aria-hidden="true" tabindex="-1">
+        <img
+          src={article.featured.url}
+          alt={article.featured.alt}
+          loading="lazy"
+          decoding="async"
+          width={article.featured.width ?? undefined}
+          height={article.featured.height ?? undefined}
+        />
+      </a>
+    </figure>
+  )}
+  {cat && (
+    <p class="card__eyebrow">
+      <a href={`/category/${cat.slug}/`} style="color:inherit;text-decoration:none;">{cat.name}</a>
+    </p>
+  )}
+  <h2 class="card__title"><a href={href} set:html={article.titleHtml} /></h2>
+  {article.excerptText && <p class="card__excerpt">{article.excerptText}</p>}
+  <p class="card__byline">
+    {article.authorAvatar ? (
+      <img class="byline-avatar byline-avatar--sm" src={article.authorAvatar} alt="" width="24" height="24" loading="lazy" />
+    ) : article.authorInitials ? (
+      <span class="byline-avatar byline-avatar--sm byline-avatar--initials" aria-hidden="true">{article.authorInitials}</span>
+    ) : null}
+    {article.authorName && (
+      <>By {article.authorSlug ? (
+        <a href={`/author/${article.authorSlug}/`}>{article.authorName}</a>
+      ) : article.authorName} · </>
+    )}
+    <time datetime={isoDate(article.date)}>{formatDate(article.date)}</time>
+  </p>
+</article>
