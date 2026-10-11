@@ -46,7 +46,6 @@ npm run astro check  # type-check .astro + .ts files
 | --------------------------- | ------------------------------------------------ |
 | `WORDPRESS_BASE_URL`        | REST API origin (target: `https://cms.thelastdvd.com`) |
 | `PUBLIC_SITE_URL`           | Public canonical origin (`https://thelastdvd.com`)      |
-| `PUBLIC_BEEHIIV_EMBED_URL`  | Beehiiv hosted form / embed URL                   |
 | `TLD_USE_CACHE` *(optional)*| Force cache-only reads (offline builds)           |
 
 ## Data layer

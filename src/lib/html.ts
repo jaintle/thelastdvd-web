@@ -63,6 +63,19 @@ export function normaliseEmailDomain(
   return html.replace(new RegExp(`@${escaped}\\b`, 'gi'), `@${publicHost}`);
 }
 
+/** Tag the Kadence masthead column containing Niveditha so CSS can place it first. */
+export function promoteMastheadEditor(html: string | undefined | null): string {
+  if (!html) return '';
+  return html
+    .split(/(?=<div class="wp-block-kadence-column\b)/)
+    .map((chunk) =>
+      /Niveditha K Prasad/.test(chunk)
+        ? chunk.replace('<div class="wp-block-kadence-column', '<div class="wp-block-kadence-column masthead-first')
+        : chunk,
+    )
+    .join('');
+}
+
 /**
  * Group WordPress "flat" editor cards on the About page.
  *   <figure><img></figure><h5>Name</h5><p>Bio</p>

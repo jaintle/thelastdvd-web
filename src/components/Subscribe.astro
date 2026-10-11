@@ -1,51 +1,27 @@
 ---
-import { siteConfig } from '../config/site';
-
 interface Props {
   variant?: 'card' | 'full';
 }
 const { variant = 'card' } = Astro.props;
-const url = siteConfig.beehiivEmbedUrl;
-// A Beehiiv subscribe-forms embed URL looks like:
-//   https://subscribe-forms.beehiiv.com/<uuid>
-// Anything else (a plain publication link) becomes a button.
-const isEmbed = Boolean(url) && /subscribe-forms\.beehiiv\.com\//.test(url);
 ---
 
 {variant === 'card' ? (
   <section class="subscribe-cta">
     <h2>Subscribe to the newsletter</h2>
     <p>Free. Independent writing on cinema and adjacent arts, delivered by email.</p>
-    {url ? (
-      <a class="button" href="/subscribe/">Subscribe</a>
-    ) : (
-      <p style="color:var(--muted);font-family:var(--sans);font-size:14px;">
-        Newsletter link coming soon.
-      </p>
-    )}
+    <a class="button" href="/subscribe/">Subscribe</a>
   </section>
 ) : (
   <section class="subscribe-embed">
-    {url && isEmbed ? (
-      <>
-        <iframe
-          src={url}
-          class="beehiiv-embed"
-          data-test-id="beehiiv-embed"
-          title="Subscribe to The Last DVD newsletter"
-          frameborder="0"
-          scrolling="no"
-          loading="lazy"
-        />
-        <script async src="https://subscribe-forms.beehiiv.com/embed.js" />
-      </>
-    ) : url ? (
-      <p><a class="button" href={url} target="_blank" rel="noopener">Subscribe on Beehiiv</a></p>
-    ) : (
-      <p style="color:var(--muted);">
-        The newsletter link is not yet configured. In the meantime, write to{' '}
-        <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>.
-      </p>
-    )}
+    <iframe
+      src="https://thelastdvd.substack.com/embed"
+      class="substack-embed"
+      title="Subscribe to The Last DVD newsletter"
+      width="480"
+      height="320"
+      frameborder="0"
+      scrolling="no"
+      loading="lazy"
+    ></iframe>
   </section>
 )}

@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import WpContent from '../../components/content/WpContent.astro';
 import { getPageBySlug } from '../../lib/wordpress/pages';
+import { promoteMastheadEditor } from '../../lib/html';
 import { siteConfig } from '../../config/site';
 
 const page = await getPageBySlug('about-us');
@@ -12,7 +13,7 @@ const title = page?.title || 'About us';
   <div class="container page-body">
     <h1 class="page-title">{title}</h1>
     {page ? (
-      <WpContent html={page.contentHtml} />
+      <WpContent html={promoteMastheadEditor(page.contentHtml)} />
     ) : (
       <p>
         {siteConfig.name} is an independent magazine on cinema and adjacent arts.

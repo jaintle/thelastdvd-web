@@ -699,6 +699,14 @@ hr {
   max-width: none;
 }
 
+/* Kadence masthead row: stacked, with the lead editor first */
+.wp-content .kt-row-column-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+.wp-content .masthead-first { order: -1; }
+
 /* ---- WordPress column / gallery blocks (editorial masthead layouts) ---- */
 .wp-content .wp-block-columns {
   display: flex;
@@ -790,17 +798,17 @@ hr {
   border-color: var(--ink);
 }
 
-/* ---- Beehiiv embed ---- */
+/* ---- Substack embed ---- */
 .subscribe-embed {
   margin: var(--space-6) 0;
-  max-width: 804px;
+  max-width: 480px;
 }
-.subscribe-embed .beehiiv-embed {
+.subscribe-embed .substack-embed {
   width: 100%;
-  height: 415px;
+  height: 320px;
   max-width: 100%;
-  border: 0;
-  background: transparent;
+  border: 1px solid #eee;
+  background: white;
 }
 
 /* ---- Newsletter CTA ---- */

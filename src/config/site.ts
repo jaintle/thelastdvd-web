@@ -24,8 +24,6 @@ export const siteConfig = {
   description:
     'The Last DVD is an independent magazine on cinema and adjacent arts — music, dance, theatre, culture — based in India, publishing internationally.',
   email: 'editor@thelastdvd.com',
-  beehiivEmbedUrl:
-    (import.meta.env.PUBLIC_BEEHIIV_EMBED_URL as string | undefined) ?? '',
   nav: [
     { label: 'About us', href: '/about-us/' },
     { label: 'Contact', href: '/contact-us/' },
