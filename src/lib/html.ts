@@ -114,12 +114,12 @@ export function sanitizeBio(html: string | undefined | null): string {
   out = out.replace(/<\/?([a-z0-9]+)([^>]*)>/gi, (m, tag: string, rest: string) => {
     if (!allow.test(tag)) return '';
     if (tag.toLowerCase() === 'a') {
+      if (m.startsWith('</')) return '</a>';
       const href = rest.match(/\bhref\s*=\s*"([^"]+)"/i)?.[1] ?? rest.match(/\bhref\s*=\s*'([^']+)'/i)?.[1] ?? '';
       if (!/^(https?:|mailto:|\/)/i.test(href)) return '';
       const external = /^https?:/i.test(href);
       const attrs = external ? ` href="${href}" target="_blank" rel="noopener nofollow"` : ` href="${href}"`;
-      // <a …>  vs  </a>
-      return m.startsWith('</') ? '</a>' : `<a${attrs}>`;
+      return `<a${attrs}>`;
     }
     return m.startsWith('</') ? `</${tag.toLowerCase()}>` : `<${tag.toLowerCase()}>`;
   });
