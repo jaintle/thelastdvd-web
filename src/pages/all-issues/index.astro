@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import WpContent from '../../components/content/WpContent.astro';
+import { sortIssueList } from '../../lib/html';
 import { getPageBySlug } from '../../lib/wordpress/pages';
 import { getAllCategories } from '../../lib/wordpress/taxonomies';
 
@@ -10,14 +11,14 @@ const title = page?.title || 'All Issues';
 // Fallback: expose issue-* categories if the WP page is missing.
 const cats = page ? [] : (await getAllCategories().catch(() => []))
   .filter((c) => /^issue-\d+/i.test(c.slug) || c.slug === 'current-issue')
-  .sort((a, b) => a.name.localeCompare(b.name));
+  .sort((a, b) => b.name.localeCompare(a.name, undefined, { numeric: true }));
 ---
 
 <BaseLayout title={title} description="Every issue of The Last DVD.">
   <div class="container page-body">
     <h1 class="page-title">{title}</h1>
     {page ? (
-      <WpContent html={page.contentHtml} />
+      <WpContent html={sortIssueList(page.contentHtml)} />
     ) : cats.length > 0 ? (
       <ul>
         {cats.map((c) => (

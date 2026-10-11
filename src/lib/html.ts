@@ -63,6 +63,25 @@ export function normaliseEmailDomain(
   return html.replace(new RegExp(`@${escaped}\\b`, 'gi'), `@${publicHost}`);
 }
 
+/** Order a WP categories list: current issue first, then issues newest to oldest. */
+export function sortIssueList(html: string | undefined | null): string {
+  if (!html) return '';
+  const itemRe = /<li class="cat-item[\s\S]*?<\/li>/g;
+  const items = html.match(itemRe);
+  if (!items || items.length < 2) return html;
+  const rank = (li: string): number => {
+    if (/\/category\/current-issue\//i.test(li)) return Infinity;
+    const n = li.match(/\/category\/issue-(\d+)\//i)?.[1];
+    return n ? Number(n) : -1;
+  };
+  const sorted = items
+    .map((li, i) => ({ li, i, r: rank(li) }))
+    .sort((a, b) => b.r - a.r || a.i - b.i)
+    .map((x) => x.li);
+  let k = 0;
+  return html.replace(itemRe, () => sorted[k++]);
+}
+
 /** Tag the Kadence masthead column containing Niveditha so CSS can place it first. */
 export function promoteMastheadEditor(html: string | undefined | null): string {
   if (!html) return '';
